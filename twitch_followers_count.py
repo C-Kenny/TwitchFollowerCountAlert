@@ -3,12 +3,20 @@ import subprocess
 import json
 from sys import platform as _platform
 
+"""
+Prog:   Console script that alerts user when the desired twitch channel surpasses n 
+        followers. Is extremely useful for competitions where the streamer 
+        announces that they will giveaway a prize at n followers
+Author: Carl Kenny
+Data:   23/11/2014
+"""
+
 LIMIT = 100
 
 def callCurlAndWriteToFile(channel, outputFile, offset, maxCount, currentCount=0):
     """ 
     Runs curl and redirects a json object to the desired output file 
-    The following provides a way to get 100 API calls at a time:
+    Example Twitch API calls
       "next": "https://api.twitch.tv/kraken/channels/test_user1/follows?limit=25&offset=25",
       "self": "https://api.twitch.tv/kraken/channels/test_user1/follows?limit=25&offset=0"
     """
@@ -16,18 +24,17 @@ def callCurlAndWriteToFile(channel, outputFile, offset, maxCount, currentCount=0
     curlCall = "curl -H 'Accept: application/vnd.twitchtv.v2+json' \
             -X GET https://api.twitch.tv/kraken/channels/" + channel + '/follows/?limit=' + str(LIMIT)
 
+    # Create JSON obj(dict) and decode it
     jsonObj = subprocess.check_output(curlCall, shell=True).decode("utf-8")
     decodedJSON = json.loads(jsonObj)
-
     
+    # Append the decoded JSON obj to a tmp file (create if doesn't exist)
     fileName = os.getcwd() + '/twitch_followers_tmp.txt'
     fileTmp = open(fileName, 'w')
     fileTmp.write(jsonObj)
     fileTmp.close()
 
-    #currentCount += len(json.load(open(fileName))['follows'])
-    for i in json.load(open(fileName))['follows']:
-        currentCount += 1
+    currentCount += len(json.load(open(fileName))['follows'])
 
     try:
         if (len(decodedJSON['follows'])) < 100:
