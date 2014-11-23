@@ -4,11 +4,14 @@ import json
 from sys import platform as _platform
 
 """
+Author: Carl Kenny | csk29@uclive.ac.nz
 Prog:   Console script that alerts user when the desired twitch channel surpasses n 
         followers. Is extremely useful for competitions where the streamer 
         announces that they will giveaway a prize at n followers
-Author: Carl Kenny
-Data:   23/11/2014
+Note:   The API only allows 100 calls at a time, so if there are a lot of followers,
+        this may take some serious time to process (maybe even minutes!).
+Usage:  python3 twitch_followers_count.py
+Date:   23/11/2014
 """
 
 LIMIT = 100
