@@ -1,6 +1,7 @@
-import os 
-import subprocess
 import json
+import os 
+import re
+import subprocess
 from sys import platform as _platform
 
 """
@@ -50,8 +51,9 @@ def callCurlAndWriteToFile(channel, outputFile, offset, maxCount, currentCount=0
         else:
             offset += 100
             callCurlAndWriteToFile(channel, outputFile, offset, maxCount, currentCount)
+
     except TypeError:
-        print("Invalid URL, please check your spelling/\n###RESTARTING###")
+        print("Oops. Either an invalid URL or offline channel. Restarting...\n")
         main()
 
 
@@ -65,12 +67,48 @@ def notifyUser(followers, channel):
 
     if _platform == "linux" or _platform == "linux2":
         message = \
-            "xmessage -print 'THE CHANNEL HAS REACHED {} GET IN QUICK. " \
+            "xmessage -center -print 'THE CHANNEL HAS REACHED {} GET IN QUICK. " \
             "Here is the URL: https://www.twitch.tv/{}'".format(str(followers), channel)
         os.system(message)
     else:
         print("THE CHANNEL HAS REACHED {} GET IN QUICK. " \
             "Here is the URL: https://www.twitch.tv/{}'".format(str(followers), channel))
+
+
+def getChannelStatus(channel):
+    """
+    :param channel str
+    :return str
+    """
+    curlCall = "curl -H 'Accept: application/vnd.twitchtv.v3+json' \
+            -X GET https://api.twitch.tv/kraken/channels/{}".format(channel)
+    # Create JSON obj(dict) and decode it
+    jsonObj = subprocess.check_output(curlCall, shell=True).decode("utf-8")
+    decodedJSON = json.loads(jsonObj)
+    status = decodedJSON['status']
+    return status
+
+
+def getFollowerCountFromStatus(status):
+    """
+    :param status str
+    :return followers_required int 
+    >>> print(getFollowerCountFromStatus("giveaway @5000followers"))
+    5000
+    """
+    lowercaseStatus = status.lower()
+    requiredWords = ["giveaway", "followers"]
+
+    if all(x in status for x in requiredWords):
+        # test for digit followed by k e.g. 40k -> 40 000
+        count, k = re.search("(\d+)(k)*", lowercaseStatus).groups()
+
+        if k:
+            return int(count) * 1000
+        else:
+            return int(count)
+    else:
+        return None
 
 
 def getChannelName():
@@ -80,16 +118,22 @@ def getChannelName():
 
 def getFollowCount():
     """ Returns int of desired follow threshold """
-    # TODO: Add the abililty to attempt to scrap this from the channel description
     return int(input("You will be notified when the follows surpass a threshold. \ "
                      "\nEnter the follower limit: "))
 
 
 def main():
     channel = getChannelName()
+    status = getChannelStatus(channel)
+    followers = getFollowerCountFromStatus(status)
+    if followers:
+        print("Is {} the target number of followers you're waiting for? y/n".format(followers))
+        maxCount = followers if input(">>> ") == "y" else getFollowCount()
+    else:
+        maxCount = getFollowCount()
+    
     workingDirectory = os.getcwd()
     outputFile = workingDirectory + "followerCount.txt"
-    maxCount = getFollowCount()
     offset = 0
     callCurlAndWriteToFile(channel, outputFile, offset, maxCount)
 
