@@ -56,12 +56,22 @@ def callCurlAndWriteToFile(channel, outputFile, offset, maxCount, currentCount=0
 
 
 def notifyUser(followers, channel):
-    """ Checks for host OS, then decides on an appropriate GUI pop-up message """
+    """ 
+    Checks for host OS, then decides on an appropriate GUI pop-up message 
+    :param followers int
+    :param channel str
+    :return void
+    """
+
     if _platform == "linux" or _platform == "linux2":
         message = \
             "xmessage -print 'THE CHANNEL HAS REACHED {} GET IN QUICK. " \
             "Here is the URL: https://www.twitch.tv/{}'".format(str(followers), channel)
         os.system(message)
+    else:
+        print("THE CHANNEL HAS REACHED {} GET IN QUICK. " \
+            "Here is the URL: https://www.twitch.tv/{}'".format(str(followers), channel))
+
 
 def getChannelName():
     """ Returns string of channel name """

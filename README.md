@@ -1,8 +1,9 @@
 TwitchFollowerCountAlert 
 ========================
-Linux only (currently)
+Linux   | GUI pop up
+Windows | Text in stdio in command prompt
 
-**Author:** Carl Kenny | csk29@uclive.ac.nz
+**Author:** Carl Kenny
 
 **Prog:** Console script that alerts user when the desired twitch channel surpasses n
 followers. Is extremely useful for competitions where the streamer
